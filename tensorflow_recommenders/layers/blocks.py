@@ -45,10 +45,10 @@ class MLP(tf.keras.layers.Layer):
 
     self._sublayers = []
 
-    for num_units in units[:-1]:
-      self._sublayers.append(
-          tf.keras.layers.Dense(
-              num_units, activation=activation, use_bias=use_bias))
+    self._sublayers.extend(
+        tf.keras.layers.Dense(
+            num_units, activation=activation, use_bias=use_bias)
+        for num_units in units[:-1])
     self._sublayers.append(
         tf.keras.layers.Dense(
             units[-1], activation=final_activation, use_bias=use_bias))

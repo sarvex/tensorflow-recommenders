@@ -97,7 +97,7 @@ class DotInteraction(tf.keras.layers.Layer):
       activations = tf.where(condition=tf.cast(upper_tri_mask, tf.bool),
                              x=tf.zeros_like(xactions),
                              y=xactions)
-      out_dim = num_features * num_features
+      out_dim = num_features**2
     else:
       activations = tf.boolean_mask(xactions, lower_tri_mask)
     activations = tf.reshape(activations, (batch_size, out_dim))

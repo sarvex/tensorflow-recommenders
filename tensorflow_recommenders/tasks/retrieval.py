@@ -157,7 +157,8 @@ class Retrieval(tf.keras.layers.Layer, base.Task):
             "When accidental hit removal is enabled, candidate ids "
             "must be supplied."
         )
-      scores = layers.loss.RemoveAccidentalHits()(labels, scores, candidate_ids)
+      else:
+        scores = layers.loss.RemoveAccidentalHits()(labels, scores, candidate_ids)
 
     if self._num_hard_negatives is not None:
       scores, labels = layers.loss.HardNegativeMining(self._num_hard_negatives)(
@@ -179,13 +180,11 @@ class Retrieval(tf.keras.layers.Layer, base.Task):
               true_candidate_ids=candidate_ids)
       )
 
-    for metric in self._batch_metrics:
-      update_ops.append(metric.update_state(labels, scores))
-
-    for metric in self._loss_metrics:
-      update_ops.append(
-          metric.update_state(loss, sample_weight=sample_weight))
-
+    update_ops.extend(
+        metric.update_state(labels, scores) for metric in self._batch_metrics)
+    update_ops.extend(
+        metric.update_state(loss, sample_weight=sample_weight)
+        for metric in self._loss_metrics)
     with tf.control_dependencies(update_ops):
       return tf.identity(loss)
 

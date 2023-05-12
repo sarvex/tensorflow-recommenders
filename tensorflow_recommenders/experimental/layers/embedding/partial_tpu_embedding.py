@@ -123,7 +123,7 @@ class PartialTPUEmbedding(tf.keras.layers.Layer):
 
     if self._tpu_embedding:
       tpu_emb_output_dict = self._tpu_embedding(tpu_emb_inputs)  # pylint: disable=[not-callable]
-      output.update(tpu_emb_output_dict)
+      output |= tpu_emb_output_dict
     return output
 
   @property

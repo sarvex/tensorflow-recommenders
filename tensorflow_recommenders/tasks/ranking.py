@@ -92,24 +92,21 @@ class Ranking(tf.keras.layers.Layer, base.Task):
     if not compute_metrics:
       return loss
 
-    update_ops = []
-
-    for metric in self._ranking_metrics:
-      update_ops.append(metric.update_state(
-          y_true=labels, y_pred=predictions, sample_weight=sample_weight))
-
-    for metric in self._prediction_metrics:
-      update_ops.append(
-          metric.update_state(predictions, sample_weight=sample_weight))
-
-    for metric in self._label_metrics:
-      update_ops.append(
-          metric.update_state(labels, sample_weight=sample_weight))
-
-    for metric in self._loss_metrics:
-      update_ops.append(
-          metric.update_state(loss, sample_weight=sample_weight))
-
+    update_ops = [
+        metric.update_state(y_true=labels,
+                            y_pred=predictions,
+                            sample_weight=sample_weight)
+        for metric in self._ranking_metrics
+    ]
+    update_ops.extend(
+        metric.update_state(predictions, sample_weight=sample_weight)
+        for metric in self._prediction_metrics)
+    update_ops.extend(
+        metric.update_state(labels, sample_weight=sample_weight)
+        for metric in self._label_metrics)
+    update_ops.extend(
+        metric.update_state(loss, sample_weight=sample_weight)
+        for metric in self._loss_metrics)
     # Custom metrics may not return update ops, unlike built-in
     # Keras metrics.
     update_ops = [x for x in update_ops if x is not None]

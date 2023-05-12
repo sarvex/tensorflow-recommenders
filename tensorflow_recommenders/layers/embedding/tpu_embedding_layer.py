@@ -68,16 +68,15 @@ def _get_batch_size_from_input_shapes(input_shape):
   for tensor_shape in flattened_input_shape:
     if tensor_shape.rank < 1:
       raise ValueError(
-          "Received input tensor of shape {}. Rank must be > 0.".format(
-              tensor_shape))
+          f"Received input tensor of shape {tensor_shape}. Rank must be > 0.")
     shape = tensor_shape.as_list()
     if shape[0] is not None:
       if per_core_batch_size is None:
         per_core_batch_size = shape[0]
       elif per_core_batch_size != shape[0]:
-        raise ValueError("Found multiple batch sizes {} and {} in input. All "
-                         "features must have the same batch size.".format(
-                             per_core_batch_size, shape[0]))
+        raise ValueError(
+            f"Found multiple batch sizes {per_core_batch_size} and {shape[0]} in input. All features must have the same batch size."
+        )
 
   if per_core_batch_size is None:
     raise ValueError("Unable to determine batch dimension of any features. "
@@ -120,16 +119,15 @@ def _normalize_and_prepare_optimizer(optimizer):
     elif str(optimizer) == "adam":
       return tf.tpu.experimental.embedding.Adam()
     else:
-      raise ValueError("Unknown optimizer name '{}'. Please use one of 'sgd',"
-                       "'adagrad' or 'adam'".format(optimizer))
+      raise ValueError(
+          f"Unknown optimizer name '{optimizer}'. Please use one of 'sgd','adagrad' or 'adam'"
+      )
   elif isinstance(optimizer, tf.keras.optimizers.Optimizer):
     return translate_keras_optimizer(optimizer)
   else:
     raise ValueError(
-        "Unknown optimizer type {}. Please pass a string optimizer name, a "
-        "subclass of keras optimizer or an instance of one of the optimizer "
-        "parameter classes under tf.tpu.experimental.embedding.".format(
-            type(optimizer)))
+        f"Unknown optimizer type {type(optimizer)}. Please pass a string optimizer name, a subclass of keras optimizer or an instance of one of the optimizer parameter classes under tf.tpu.experimental.embedding."
+    )
 
 
 def _clone_and_prepare_features(feature_config):
@@ -174,7 +172,7 @@ def _clone_and_prepare_features(feature_config):
             name=config.name))
 
   # Fix up the optimizers.
-  for _, new_table in table_configs.items():
+  for new_table in table_configs.values():
     if new_table.optimizer is not None:
       new_table.optimizer = _normalize_and_prepare_optimizer(
           new_table.optimizer)
@@ -206,12 +204,13 @@ def _update_table_configs(feature_config, table_config_map):
     ValueError: if there is a TableConfig object that was not passed in on layer
       initialization.
   """
-  output_objects = []
   table_config_dict = dict(table_config_map)
+  output_objects = []
   for config in tf.nest.flatten(feature_config):
     if config.table not in table_config_dict:
-      raise ValueError("TableConfig %s does not match any of the TableConfigs "
-                       "used to configure this layer." % config.table)
+      raise ValueError(
+          f"TableConfig {config.table} does not match any of the TableConfigs used to configure this layer."
+      )
     output_objects.append(
         tf.tpu.experimental.embedding.FeatureConfig(
             table=table_config_dict[config.table],
@@ -895,8 +894,9 @@ def translate_keras_optimizer(optimizer):
     return embedding_optimizer(**params)
 
   elif isinstance(optimizer, tf.keras.optimizers.Optimizer):
-    raise ValueError("Keras optimizer %s is unsupported for TPU Embedding."
-                     % optimizer.__class__.__name__)
+    raise ValueError(
+        f"Keras optimizer {optimizer.__class__.__name__} is unsupported for TPU Embedding."
+    )
   else:
     raise ValueError("%s is an unsupported optimizer class. Please pass a "
                      "Keras optimizer." % optimizer.__class__.__name__)

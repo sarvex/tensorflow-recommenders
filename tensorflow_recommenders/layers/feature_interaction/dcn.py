@@ -104,10 +104,10 @@ class Cross(tf.keras.layers.Layer):
 
     self._supports_masking = True
 
-    if self._diag_scale < 0:  # pytype: disable=unsupported-operands
+    if self._diag_scale < 0:# pytype: disable=unsupported-operands
       raise ValueError(
-          "`diag_scale` should be non-negative. Got `diag_scale` = {}".format(
-              self._diag_scale))
+          f"`diag_scale` should be non-negative. Got `diag_scale` = {self._diag_scale}"
+      )
 
   def build(self, input_shape):
     last_dim = input_shape[-1]
@@ -159,9 +159,8 @@ class Cross(tf.keras.layers.Layer):
 
     if x0.shape[-1] != x.shape[-1]:
       raise ValueError(
-          "`x0` and `x` dimension mismatch! Got `x0` dimension {}, and x "
-          "dimension {}. This case is not supported yet.".format(
-              x0.shape[-1], x.shape[-1]))
+          f"`x0` and `x` dimension mismatch! Got `x0` dimension {x0.shape[-1]}, and x dimension {x.shape[-1]}. This case is not supported yet."
+      )
 
     if self._projection_dim is None:
       prod_output = self._dense(x)

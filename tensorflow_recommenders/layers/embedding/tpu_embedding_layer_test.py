@@ -209,12 +209,15 @@ class TPUEmbeddingLayerTest(parameterized.TestCase, tf.test.TestCase):
 
   def _create_sparse_dataset(self, strategy):
     # Create dataset for enqueue operation
-    sparse_features = {}
-    sparse_features['watched'] = tf.SparseTensor(
-        indices=self.feature_watched_indices,
-        values=tf.convert_to_tensor(self.feature_watched_values,
-                                    dtype=tf.int32),
-        dense_shape=[self.batch_size, 2])
+    sparse_features = {
+        'watched':
+        tf.SparseTensor(
+            indices=self.feature_watched_indices,
+            values=tf.convert_to_tensor(self.feature_watched_values,
+                                        dtype=tf.int32),
+            dense_shape=[self.batch_size, 2],
+        )
+    }
     sparse_features['favorited'] = tf.SparseTensor(
         indices=self.feature_favorited_indices,
         values=tf.convert_to_tensor(self.feature_favorited_values,
@@ -233,11 +236,14 @@ class TPUEmbeddingLayerTest(parameterized.TestCase, tf.test.TestCase):
 
   def _create_ragged_dataset(self, strategy, include_weights=False, weight=0.5):
     # Create dataset for enqueue operation
-    ragged_features = {}
-    ragged_features['watched'] = tf.RaggedTensor.from_row_lengths(
-        row_lengths=self.feature_watched_row_lengths,
-        values=tf.convert_to_tensor(self.feature_watched_values,
-                                    dtype=tf.int32))
+    ragged_features = {
+        'watched':
+        tf.RaggedTensor.from_row_lengths(
+            row_lengths=self.feature_watched_row_lengths,
+            values=tf.convert_to_tensor(self.feature_watched_values,
+                                        dtype=tf.int32),
+        )
+    }
     ragged_features['favorited'] = tf.RaggedTensor.from_row_lengths(
         row_lengths=self.feature_favorited_row_lengths,
         values=tf.convert_to_tensor(self.feature_favorited_values,
@@ -282,14 +288,12 @@ class TPUEmbeddingLayerTest(parameterized.TestCase, tf.test.TestCase):
 
 
 def _get_total_loss_tensor(activations):
-  losses = []
-  for key in activations:
-    losses.append(
-        tf.reduce_mean(
-            tf.reduce_sum(
-                tf.math.squared_difference(activations[key], 0), 1)))
-  total_loss = tf.expand_dims(sum(losses), 0)
-  return total_loss
+  losses = [
+      tf.reduce_mean(
+          tf.reduce_sum(tf.math.squared_difference(activations[key], 0), 1))
+      for key in activations
+  ]
+  return tf.expand_dims(sum(losses), 0)
 
 
 def _create_optimizer(optimizer_name='adagrad'):

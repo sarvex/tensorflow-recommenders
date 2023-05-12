@@ -67,12 +67,11 @@ def _generate_synthetic_data(num_dense: int,
   dense_tensor = tf.random.uniform(
       shape=(dataset_size, num_dense), maxval=1.0, dtype=tf.float32)
 
-  sparse_tensors = []
-  for size in vocab_sizes:
-    sparse_tensors.append(
-        tf.random.uniform(
-            shape=(dataset_size,), maxval=int(size), dtype=tf.int32))
-
+  sparse_tensors = [
+      tf.random.uniform(shape=(dataset_size, ),
+                        maxval=int(size),
+                        dtype=tf.int32) for size in vocab_sizes
+  ]
   sparse_tensor_elements = {
       str(i): sparse_tensors[i] for i in range(len(sparse_tensors))
   }
